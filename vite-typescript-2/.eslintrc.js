@@ -7,6 +7,7 @@ module.exports = {
     parser: '@typescript-eslint/parser',
     ecmaVersion: 2018,
     sourceType: 'module',
+    project: './vite.config.ts',
   },
   ignorePatterns: [
     'node_modules/**',
@@ -17,6 +18,7 @@ module.exports = {
   ],
   rules: {
     semi: 'off',
+    /* '@typescript-eslint/no-unsafe-assignment': 'error', */
     indent: ['error', 2, { SwitchCase: 1 }],
     'import/prefer-default-export': 'off',
     /* 'comma-dangle': ['error', 'always'], */
@@ -31,14 +33,15 @@ module.exports = {
       },
     ],
   },
-  plugins: ['@typescript-eslint'],
+  plugins: ['@typescript-eslint', 'react'],
   extends: [
     'eslint:recommended',
     'airbnb-base',
-    /* 'plugin:react/recommended', */
+    'plugin:react/recommended',
     /* 'eslint-plugin-prettier', */
     'prettier',
     'eslint-config-prettier',
     'plugin:@typescript-eslint/recommended',
+    'plugin:@typescript-eslint/recommended-requiring-type-checking',
   ],
 }

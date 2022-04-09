@@ -2,12 +2,25 @@
 import { observable, computed, action } from 'mobx'
 import { v4 as uuid } from 'uuid'
 import format from 'format-number-with-string'
-import moment from 'moment'
 
-export class Timer {
+import moment, { Moment } from 'moment'
+
+import ILap from '../@types/ILap'
+
+export interface ITimer {
+  milliseconds: number
+  savedMilliseconds: number
+  id: string
+  saveTime: () => void
+  reset: () => void
+  totalMilliSeconds: number
+}
+export class Timer implements ITimer {
   @observable milliseconds
 
   @observable savedMilliseconds
+
+  id
 
   constructor(initialMilliSeconds = 0) {
     this.milliseconds = initialMilliSeconds
@@ -25,12 +38,12 @@ export class Timer {
     this.milliseconds = 0
   }
 
-  @computed get totalMillliSeconds() {
+  @computed get totalMilliSeconds() {
     return this.milliseconds + this.savedMilliseconds
   }
 
   @computed get display() {
-    const tenMillisecondsNumber = this.totalMillliSeconds / 10 // parseInt takes a string as arg
+    const tenMillisecondsNumber = this.totalMilliSeconds / 10 // parseInt takes a string as arg
     const secondsNumber = tenMillisecondsNumber / 100
     const minutesNumber = secondsNumber / 60
 
@@ -38,21 +51,40 @@ export class Timer {
     const seconds = parseInt(secondsNumber.toString(), 10)
     const minutes = parseInt(minutesNumber.toString(), 10)
 
-    return `${minutes}: ${format(seconds % 60, '00')}: ${format(
-      tenMilliseconds % 100,
-      '00'
-    )}`
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    return `${minutes}: ${format(seconds % 60, '00') as string}: ${
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      format(tenMilliseconds % 100, '00') as string
+    }`
   }
 }
 
-export class TimerStore {
+export interface ITimerStore {
+  isRunning: boolean
+  timer: Timer
+  startTime: Moment | undefined
+  laps: ILap[]
+  mainDisplay: string
+  hasStarted: boolean
+  measure: () => void
+  startTimer: () => void
+  length: number
+  lapTime: number
+  lapData: {
+    lap: ILap
+    text: string
+  }[]
+  stopTimer: () => void
+  resetTimer: () => void
+}
+export class TimerStore implements ITimerStore {
   @observable isRunning
 
   @observable timer
 
-  @observable startTime
+  @observable startTime: Moment | undefined
 
-  @observable laps
+  @observable laps: ILap[]
 
   constructor() {
     this.isRunning = false
@@ -65,7 +97,7 @@ export class TimerStore {
   }
 
   @computed get hasStarted() {
-    return this.timer.totalMillliSeconds !== 0
+    return this.timer.totalMilliSeconds !== 0
   }
 
   @action measure() {
@@ -87,11 +119,12 @@ export class TimerStore {
   }
 
   @computed get lapTime() {
-    return this.laps.map((e) => e.totalMillliSeconds).reduce((x, y) => x + y, 0)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return this.laps.map((e) => e.totalMilliSeconds).reduce((x, y) => x + y, 0)
   }
 
   @action lapTimer() {
-    this.laps.push(new Timer(this.timer.totalMillliSeconds - this.lapTime))
+    this.laps.push(new Timer(this.timer.totalMilliSeconds - this.lapTime))
   }
 
   @computed get lapData() {
